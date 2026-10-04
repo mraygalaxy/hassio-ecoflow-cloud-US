@@ -1,7 +1,8 @@
 from custom_components.ecoflow_cloud.api import EcoflowApiClient
 from custom_components.ecoflow_cloud.devices import const, BaseDevice
 from custom_components.ecoflow_cloud.entities import BaseSensorEntity, BaseNumberEntity, BaseSwitchEntity, \
-    BaseSelectEntity
+    BaseSelectEntity, BaseButtonEntity
+from custom_components.ecoflow_cloud.button import EnabledButtonEntity
 from custom_components.ecoflow_cloud.sensor import (
     LevelSensorEntity, WattsSensorEntity, RemainSensorEntity,
     TempSensorEntity, CyclesSensorEntity, OutWattsSensorEntity,
@@ -118,3 +119,16 @@ class DeltaProUltra(BaseDevice):
 
     def selects(self, client: EcoflowApiClient) -> list[BaseSelectEntity]:
         return []
+
+    def buttons(self, client: EcoflowApiClient) -> list[BaseButtonEntity]:
+        return [
+            # AC output on/off via YJ751_PD_AC_DSG_SET, per EcoFlow's public API docs.
+            # Buttons rather than a switch since the DPU's showFlag bitfield isn't
+            # parsed yet for a reliable on/off read-back state.
+            EnabledButtonEntity(client, self, "ac_output_off", "AC Output Off",
+                                lambda value: {"cmdCode": "YJ751_PD_AC_DSG_SET",
+                                               "params": {"enable": 0, "xboost": 1, "outFreq": 60}}),
+            EnabledButtonEntity(client, self, "ac_output_on", "AC Output On",
+                                lambda value: {"cmdCode": "YJ751_PD_AC_DSG_SET",
+                                               "params": {"enable": 1, "xboost": 1, "outFreq": 60}}),
+        ]
