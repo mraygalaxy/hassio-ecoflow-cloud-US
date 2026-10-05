@@ -14,6 +14,16 @@ from custom_components.ecoflow_cloud.sensor import (
     CapacitySensorEntity, QuotaStatusSensorEntity, MiscSensorEntity,
     FrequencySensorEntity,
 )
+from homeassistant.const import UnitOfElectricCurrent
+
+
+class PlainAmpSensorEntity(AmpSensorEntity):
+    """AmpSensorEntity assumes raw integer milliamps (correct for several
+    Private API fields), but the Public API's solar/AC-port current fields
+    are already plain floats in Amps. Reusing AmpSensorEntity directly would
+    silently mislabel a correct value as 1000x too small (e.g. a real 2.2A
+    reading displaying as "2.2 mA") - this just swaps the unit, no math."""
+    _attr_native_unit_of_measurement = UnitOfElectricCurrent.AMPERE
 
 
 class DeltaProUltra(BaseDevice):
@@ -114,26 +124,26 @@ class DeltaProUltra(BaseDevice):
 
             # ── Solar (MPPT) voltage / current - documented but previously missing ──
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.inHvMpptVol", "Solar HV In Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.inHvMpptAmp", "Solar HV In Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.inHvMpptAmp", "Solar HV In Current"),
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.inLvMpptVol", "Solar LV In Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.inLvMpptAmp", "Solar LV In Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.inLvMpptAmp", "Solar LV In Current"),
 
             # ── AC port voltage / current ───────────────────────────────────────
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAc5p8Vol", "5.8kW Port Out Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAc5p8Amp", "5.8kW Port Out Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAc5p8Amp", "5.8kW Port Out Current"),
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.inAc5p8Vol", "5.8kW Port In Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.inAc5p8Amp", "5.8kW Port In Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.inAc5p8Amp", "5.8kW Port In Current"),
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.inAcC20Vol", "AC C20 In Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.inAcC20Amp", "AC C20 In Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.inAcC20Amp", "AC C20 In Current"),
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL21Vol", "AC Out L2-1 Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL21Amp", "AC Out L2-1 Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL21Amp", "AC Out L2-1 Current"),
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL22Vol", "AC Out L2-2 Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL22Amp", "AC Out L2-2 Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL22Amp", "AC Out L2-2 Current"),
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL14Vol", "AC Out L1-4 Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL14Amp", "AC Out L1-4 Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL14Amp", "AC Out L1-4 Current"),
             VoltSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcTtVol", "AC Out TT Voltage"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcTtAmp", "AC Out TT Current"),
-            AmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL12Amp", "AC Out L1-2 Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcTtAmp", "AC Out TT Current"),
+            PlainAmpSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL12Amp", "AC Out L1-2 Current"),
 
             # ── AC power factor (unitless, documented but no dedicated sensor class) ──
             MiscSensorEntity(client, self, "hs_yj751_pd_backend_addr.outAcL11Pf", "AC Out L1-1 Power Factor"),
