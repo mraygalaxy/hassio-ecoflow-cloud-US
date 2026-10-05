@@ -22,8 +22,16 @@ class PlainAmpSensorEntity(AmpSensorEntity):
     Private API fields), but the Public API's solar/AC-port current fields
     are already plain floats in Amps. Reusing AmpSensorEntity directly would
     silently mislabel a correct value as 1000x too small (e.g. a real 2.2A
-    reading displaying as "2.2 mA") - this just swaps the unit, no math."""
+    reading displaying as "2.2 mA") - this just swaps the unit, no math.
+
+    _attr_suggested_unit_of_measurement must ALSO be set explicitly: without
+    it, Home Assistant's own sensor component defaults to suggesting a
+    smaller sub-unit (mA) for small Amp-scale readings regardless of the
+    native unit declared above, which otherwise displays a value 1000x
+    larger than native (e.g. "5421 mA" instead of "5.42 A") - mathematically
+    consistent, but confusing and not what we actually want shown."""
     _attr_native_unit_of_measurement = UnitOfElectricCurrent.AMPERE
+    _attr_suggested_unit_of_measurement = UnitOfElectricCurrent.AMPERE
 
 
 class DeltaProUltra(BaseDevice):
